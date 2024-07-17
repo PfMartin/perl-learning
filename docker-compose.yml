@@ -1,9 +1,8 @@
 services:
-	main:
-		image: perl:5.38
-		volumes:
-			- ./:app
-		tty: true
-		working_dir: /app
-		container_name: perl-dev-box
-
+  main:
+    image: perl:5.38
+    volumes:
+      - ./:/app
+    tty: true
+    working_dir: /app
+    container_name: perl-dev-box
