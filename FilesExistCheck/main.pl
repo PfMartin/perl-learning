@@ -6,11 +6,11 @@ $|=1;
 use v5.38;
 
 sub main {
-	my $file_base_path = "/home/martin/Perl/LearnPerlByDoing/";
+	my $file_base_path = "/home/martin/Perl/Tutorials/TestFiles/";
 
 	my @file_names = (
-		"robot.png", 
-		"hello_world.pl",
+		"mymanjeeves.txt", 
+		"output.txt",
 		"missing.txt",
 	);
 

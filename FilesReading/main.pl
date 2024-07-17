@@ -10,14 +10,14 @@ sub file_exists {
 }
 
 sub main {
-	my $file = '/home/martin/Perl/Tutorials/FilesReading/mymanjeeves.txt';
+	my $file = '/home/martin/Perl/Tutorials/TestFiles/mymanjeeves.txt';
 	file_exists($file) or die "File doesn't exist";
 
 	open(my $fh, $file) or die "Input file $file not found.\n";
 
 	while(my $line = <$fh>) {
 		if($line =~ / egg /) {
-			print("$line\n");
+			print("$line");
 		}
 		
 	}
