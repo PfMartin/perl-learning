@@ -10,7 +10,7 @@ sub file_exists {
 }
 
 sub main {
-	my $file = '/home/martin/Perl/Tutorials/TestFiles/mymanjeeves.txt';
+	my $file = '/app/TestFiles/mymanjeeves.txt';
 	file_exists($file) or die "File doesn't exist";
 
 	open(my $fh, $file) or die "Input file $file not found.\n";

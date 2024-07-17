@@ -6,7 +6,7 @@ $|=1;
 use v5.38;
 
 sub main {
-	my $file_base_path = "/home/martin/Perl/Tutorials/TestFiles/";
+	my $file_base_path = "/app/TestFiles/";
 
 	my @file_names = (
 		"mymanjeeves.txt", 

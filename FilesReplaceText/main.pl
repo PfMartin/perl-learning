@@ -6,7 +6,7 @@ $|=1;
 use v5.38;
 
 sub main {
-	my $input_file = '/home/martin/Perl/Tutorials/TestFiles/mymanjeeves.txt';
+	my $input_file = '/app/TestFiles/mymanjeeves.txt';
 	open(my $input_fh, $input_file) or die "Failed to open file: $input_file\n";
 	
 
