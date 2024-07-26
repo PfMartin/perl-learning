@@ -1,12 +1,12 @@
 use strict;
 use warnings;
 
-use v5.38;
+use v5.38.2;
 
 $|=1;
 
 sub main {
-	my $input_file = '../../TestFiles/payments.csv';
+	my $input_file = '/app/TestFiles/payments.csv';
 
 	open(my $input_fh, $input_file) or die "Failed to open file: $input_file\n";
 

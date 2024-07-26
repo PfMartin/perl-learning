@@ -1,0 +1,9 @@
+{
+  "name": "Perl Dev Box",
+  "dockerComposeFile": "../docker-compose.yml",
+  "service": "main",
+  "workspaceFolder": "/app",
+  "forwardPorts": [],
+  "postCreateCommand": "perl -v", // Command to run after creating the container
+  "remoteUser": "root"
+}
