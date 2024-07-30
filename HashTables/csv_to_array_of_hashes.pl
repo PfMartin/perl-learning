@@ -28,11 +28,19 @@ sub isNotEmptyLine {
 sub isValidLine {
   my ($name, $amount, $time) = @_;
 
-  if (!$name || !$amount || !$time) {
+  if (scalar(@_) < 3 || !$name || !$amount || !$time) {
     return 0
   }
 
   return 1
+}
+
+sub stripLine {
+  my ($line) = @_;
+
+    $line =~ s/^\s*|\s*$//g;
+
+  return $line;
 }
 
 sub main {
@@ -45,9 +53,15 @@ sub main {
   my ($name_key, $amount_key, $time_key);
   my $idx = 0;
   for my $line (<$fh>) {
-    chomp($line);
+    $line = stripLine($line);
 
-    isNotEmptyLine($line) || $idx++ && next;
+    if (!isNotEmptyLine($line)) {
+      printf("Empty row on line %d\n", $idx+1);
+      $idx++;
+      next;
+    }
+
+    chomp($line);
 
     my ($name, $amount, $time) = split(/\s*,\s*/, $line);
 
