@@ -52,6 +52,8 @@ sub main {
 
   my ($name_key, $amount_key, $time_key);
   my $idx = 0;
+
+  <$fh>;
   for my $line (<$fh>) {
     $line = stripLine($line);
 
