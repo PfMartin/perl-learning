@@ -1,4 +1,4 @@
 {
   "editor.formatOnSave": true,
-  "editor.defaultFormatter": "sfodje.perltidy"
+  "editor.defaultFormatter": "zhiyuan-lin.simple-perl"
 }
