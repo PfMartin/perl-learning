@@ -5,12 +5,22 @@ use LWP::Simple;
 
 $|=1;
 
-sub get_test_site_title() {
-  my $content = get("http://0.0.0.0:8000/test_site.html");
+sub get_content_from_url {
+  my ($url) = @_;
+
+  my $content = get($url);
 
   unless(defined($content)) {
-    die "Error: Unreachable url\n";
+    die "Error: Failed getting content from url: $url\n";
   }
+
+  return $content;
+}
+
+sub get_test_site_title {
+  my ($url) = @_;
+
+  my $content = get_content_from_url($url);
 
   if($content =~ /<h1>(.+?)<\/h1>/) {
     my $title = $1;
@@ -19,6 +29,16 @@ sub get_test_site_title() {
   } else {
     print("Failed to find headline\n");
   };
+}
+
+sub match_multiple {
+  my ($url) = @_;
+
+  my $content = get_content_from_url($url);
+
+  while($content =~ m|<li>([Ii]tem\s[0-9]{1,}.*?)<\/li>|sig) {
+    print("Matched item: '$1'\n");
+  }
 }
 
 sub character_classes() {
@@ -34,20 +54,22 @@ sub character_classes() {
   );
 
   for my $test (@tests) {
-  if ($content =~ /$test/) {
-    print("Matched: '$1'\n");
-  } else {
-    print("No match\n");
+    if ($content =~ /$test/) {
+      print("Matched: '$1'\n");
+    } else {
+      print("No match\n");
+    }
   }
-  }
-
 }
 
 
 sub main {
   character_classes();
 
-  get_test_site_title();
+  my $url = "http://0.0.0.0:8000/test_site.html";
+  get_test_site_title($url);
+  match_multiple($url);
+
 }
 
 main();
