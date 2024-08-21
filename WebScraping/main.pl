@@ -31,14 +31,22 @@ sub get_test_site_title {
   };
 }
 
-sub match_multiple {
+sub match_repeatedly {
   my ($url) = @_;
 
   my $content = get_content_from_url($url);
 
-  while($content =~ m|<li>([Ii]tem\s[0-9]{1,}.*?)<\/li>|sig) {
+  my $matcher = qr|<li>([Ii]tem\s[0-9]{1,}.*?)<\/li>|;
+
+  while($content =~ /$matcher/sig) {
     print("Matched item: '$1'\n");
   }
+
+  my @matched_items = $content =~ /$matcher/sig;
+  for (@matched_items) {
+    print("Matched items in array: '$_'\n");
+  }
+
 }
 
 sub character_classes() {
@@ -68,7 +76,7 @@ sub main {
 
   my $url = "http://0.0.0.0:8000/test_site.html";
   get_test_site_title($url);
-  match_multiple($url);
+  match_repeatedly($url);
 
 }
 
