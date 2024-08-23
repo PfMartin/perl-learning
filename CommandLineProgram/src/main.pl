@@ -5,7 +5,7 @@ use Data::Dumper;
 use Getopt::Std;
 use XML::Simple;
 
-$|=1;
+$| = 1;
 
 =pod
 
@@ -15,119 +15,134 @@ $|=1;
 =cut
 
 sub main {
-  my %opts;
+    my %opts;
 
-  getopts('d:r', \%opts);
+    getopts( 'd:r', \%opts );
 
-  if(!check_usage(\%opts)) {
-    print_usage();
-    exit();
-  }
+    if ( !check_usage( \%opts ) ) {
+        print_usage();
+        exit();
+    }
 
-  my $input_dir = $opts{'d'};
+    my $input_dir = $opts{'d'};
 
-  my @files = get_xml_files($input_dir);
+    my @files = get_xml_files($input_dir);
 
-  if($opts{'r'}) {
-    process_files(\@files, $input_dir);
-  } else {
-    print(Dumper(\@files));
-  }
+    if ( $opts{'r'} ) {
+        process_files( \@files, $input_dir );
+    }
+    else {
+        print( Dumper( \@files ) );
+    }
 }
 
 sub process_files {
-  my ($files, $input_dir) = @_;
+    my ( $files, $input_dir ) = @_;
 
-  for my $file(@$files) {
-    my $file_path = "$input_dir/$file";
-    process_file("$file_path");
-  }
+    for my $file (@$files) {
+        my $file_path = "$input_dir/$file";
+        my @bands     = process_file("$file_path");
+
+        print( Dumper(@bands) );
+    }
 }
 
 sub process_file {
-  my ($file_path) = @_;
+    my ($file_path) = @_;
 
-  print("Processing file: $file_path\n");
+    print("Processing file: $file_path\n");
 
-  my $has_error = 0;
+    my $has_error = 0;
 
-  open(INPUTFILE, $file_path) or $has_error = 1;
+    open( INPUTFILE, $file_path ) or $has_error = 1;
 
-  if (!$has_error) {
-    # $/ = "</entry>"; # Global variable file separator -> Default is "\n"
-    undef($/); # Reads whole file in one go
+    my @band_record;
+    if ( !$has_error ) {
 
-    my $content = <INPUTFILE>;
-    print("$content\n");
+        # $/ = "</entry>"; # Global variable file separator -> Default is "\n"
+        undef($/);    # Reads whole file in one go
 
-    my $parser = new XML::Simple;
-    my $dom = $parser->xml_in($content, ForceArray => 1);
+        my $content = <INPUTFILE>;
+        my $parser  = new XML::Simple;
+        my $dom     = $parser->xml_in( $content, ForceArray => 1 );
 
+        for my $band ( @{ $dom->{'entry'} } ) {
+            my $band_name = $band->{'band'}->[0];
+            my $albums    = $band->{'album'};
 
-    for my $band (@{$dom->{'entry'}}) {
-      my $band_name = $band->{'band'}->[0];
-      print("\n$band_name: \n");
+            my @band_albums;
+            for my $album ( @{$albums} ) {
+                my $album_name = $album->{'name'}->[0];
+                my $chart_pos  = $album->{'chartposition'}->[0];
 
-      my $albums = $band->{'album'};
-      # print(Dumper(@albums));
+                push(
+                    @band_albums,
+                    {
+                        "name"           => $album_name,
+                        "chart_position" => $chart_pos,
+                    }
+                );
+            }
 
-      for my $album (@{$albums}) {
-        my $album_name = $album->{'name'}->[0];
-        my $chart_pos = $album->{'chartposition'}->[0];
-        print("  - $album_name | $chart_pos\n");
-      }
+            push(
+                @band_record,
+                {
+                    "name"   => $band_name,
+                    "albums" => \@band_albums,
+                }
+            );
+        }
+
+        $/ = "\n";
+    }
+    else {
+        print("Failed to open file at path: '$file_path'");
     }
 
-    $/ = "\n";
-  } else {
-    print("Failed to open file at path: '$file_path'");
-  }
-
-  close(INPUTFILE);
+    close(INPUTFILE);
+    return @band_record;
 }
 
 sub get_xml_files {
-  my ($input_dir) = @_;
+    my ($input_dir) = @_;
 
-  my $fh;
-  unless(opendir($fh, $input_dir)) {
-    die "Unable to open directory '$input_dir'\n";
-  }
-
-
-  my @files;
-  for my $file_name (readdir($fh)) {
-    if ($file_name =~ /\.xml$/i) {
-      push(@files, $file_name);
+    my $fh;
+    unless ( opendir( $fh, $input_dir ) ) {
+        die "Unable to open directory '$input_dir'\n";
     }
-  }
 
-  # Alternative with built-in grep subroutine
-  # my @files = readdir($fh);
-  # @files = grep(/\.xml$/i, @files);
+    my @files;
+    for my $file_name ( readdir($fh) ) {
+        if ( $file_name =~ /\.xml$/i ) {
+            push( @files, $file_name );
+        }
+    }
 
-  closedir($fh);
+    # Alternative with built-in grep subroutine
+    # my @files = readdir($fh);
+    # @files = grep(/\.xml$/i, @files);
 
-  return @files;
+    closedir($fh);
+
+    return @files;
 }
 
-
 sub check_usage {
-  my ($opts) = @_;
+    my ($opts) = @_;
 
-  my $r = $opts->{'r'};
+    my $r = $opts->{'r'};
 
-  my $directory = $opts->{'d'};
+    my $directory = $opts->{'d'};
 
-  unless(defined($directory)) {
-    return 0;
-  }
+    unless ( defined($directory) ) {
+        return 0;
+    }
 
-  return 1;
+    return 1;
 }
 
 sub print_usage {
-  print <<USAGE;
+    print <<USAGE;
 
 usage: perl main.pl <options>
   -d  <directory>   Specify directory in which to find XML files
