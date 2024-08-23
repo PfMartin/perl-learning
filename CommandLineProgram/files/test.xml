@@ -1,0 +1,31 @@
+<xml>
+<entry>
+  <band>The Basspluckers</band>
+  <album>
+    <name>Revenge of the Sqirrels</name>
+    <chartposition>434</chartposition>
+  </album>
+  <album>
+    <name>Pluck my Bass</name>
+    <chartposition>123</chartposition>
+  </album>
+</entry>
+<entry>
+  <band>The Dead Drunks</band>
+  <album>
+    <name>Spy in the house of love</name>
+    <chartposition>10</chartposition>
+  </album>
+  <album>
+    <name>Get Out of My House of Love, You Spy</name>
+    <chartposition>74</chartposition>
+  </album>
+</entry>
+<entry>
+  <band>Foregone Conclusion</band>
+  <album>
+    <name>Mind Kontroll</name>
+    <chartposition>101</chartposition>
+  </album>
+</entry>
+</xml>

@@ -1,7 +1,9 @@
 use strict;
 use warnings;
+
 use Data::Dumper;
 use Getopt::Std;
+use XML::Simple;
 
 $|=1;
 
@@ -24,12 +26,67 @@ sub main {
 
   my $input_dir = $opts{'d'};
 
-  my @files = get_files($input_dir);
+  my @files = get_xml_files($input_dir);
 
-  print(Dumper(\@files));
+  if($opts{'r'}) {
+    process_files(\@files, $input_dir);
+  } else {
+    print(Dumper(\@files));
+  }
 }
 
-sub get_files {
+sub process_files {
+  my ($files, $input_dir) = @_;
+
+  for my $file(@$files) {
+    my $file_path = "$input_dir/$file";
+    process_file("$file_path");
+  }
+}
+
+sub process_file {
+  my ($file_path) = @_;
+
+  print("Processing file: $file_path\n");
+
+  my $has_error = 0;
+
+  open(INPUTFILE, $file_path) or $has_error = 1;
+
+  if (!$has_error) {
+    # $/ = "</entry>"; # Global variable file separator -> Default is "\n"
+    undef($/); # Reads whole file in one go
+
+    my $content = <INPUTFILE>;
+    print("$content\n");
+
+    my $parser = new XML::Simple;
+    my $dom = $parser->xml_in($content, ForceArray => 1);
+
+
+    for my $band (@{$dom->{'entry'}}) {
+      my $band_name = $band->{'band'}->[0];
+      print("\n$band_name: \n");
+
+      my $albums = $band->{'album'};
+      # print(Dumper(@albums));
+
+      for my $album (@{$albums}) {
+        my $album_name = $album->{'name'}->[0];
+        my $chart_pos = $album->{'chartposition'}->[0];
+        print("  - $album_name | $chart_pos\n");
+      }
+    }
+
+    $/ = "\n";
+  } else {
+    print("Failed to open file at path: '$file_path'");
+  }
+
+  close(INPUTFILE);
+}
+
+sub get_xml_files {
   my ($input_dir) = @_;
 
   my $fh;
@@ -50,7 +107,6 @@ sub get_files {
   # @files = grep(/\.xml$/i, @files);
 
   closedir($fh);
-
 
   return @files;
 }
