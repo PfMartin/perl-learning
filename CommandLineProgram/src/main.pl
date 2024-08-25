@@ -18,30 +18,28 @@ $| = 1;
 sub main {
     my %opts;
 
-    getopts( 'd:r', \%opts );
+    getopts( 'i:e', \%opts );
 
     if ( !check_usage( \%opts ) ) {
         print_usage();
         exit();
     }
 
-    my $input_dir = $opts{'d'};
+    my $database_handler = get_db_handler();
 
-    my @files = get_xml_files($input_dir);
+    if ( $opts{"i"} ) {
+        my $input_dir = $opts{'i'};
+        my @files     = get_xml_files($input_dir);
+        my @data      = process_files( \@files, $input_dir );
 
-    if ( !$opts{'r'} ) {
-        print( Dumper( \@files ) );
-        return;
+        add_to_database( $database_handler, \@data );
     }
 
-    my @data = process_files( \@files, $input_dir );
-    print( Dumper(@data) );
+    if ( $opts{"e"} ) {
+        export_from_database($database_handler);
+    }
 
-    my $dbh = get_db_handler();
-
-    add_to_database( $dbh, \@data );
-
-    $dbh->disconnect();
+    $database_handler->disconnect();
 }
 
 sub get_db_handler {
@@ -114,6 +112,37 @@ sub add_to_database {
     $sth_bands->finish();
     $sth_albums->finish();
     print("Done inserting\n");
+}
+
+sub export_from_database {
+    my ($db_handler) = @_;
+
+    print("Exporting data...\n");
+
+    my $sql =
+"SELECT b.id as band_id, b.name as band_name, a.id as album_id, a.name as album_name, a.position as album_chart_position "
+      . "FROM Bands as b "
+      . "JOIN Albums a on a.band_id=b.id";
+
+    my $sth = $db_handler->prepare($sql)
+      or die "Unable to prepare export query\n";
+
+    unless ( $sth->execute() ) {
+        die "Unable to execute export query\n";
+    }
+
+    while ( my $row = $sth->fetchrow_hashref() ) {
+        my $band_id              = $row->{"band_id"};
+        my $band_name            = $row->{"band_name"};
+        my $album_id             = $row->{"album_id"};
+        my $album_name           = $row->{"album_name"};
+        my $album_chart_position = $row->{"album_chart_position"};
+        print(
+"$band_id, $band_name, $album_id, $album_name, $album_chart_position\n"
+        );
+    }
+
+    $sth->finish();
 }
 
 sub clear_database {
@@ -223,9 +252,7 @@ sub get_xml_files {
 sub check_usage {
     my ($opts) = @_;
 
-    my $r = $opts->{'r'};
-
-    my $directory = $opts->{'d'};
+    my $directory = $opts->{'i'};
 
     unless ( defined($directory) ) {
         return 0;
@@ -238,11 +265,12 @@ sub print_usage {
     print <<USAGE;
 
 usage: perl main.pl <options>
-  -d  <directory>   Specify directory in which to find XML files
-  -r                Run the program; Process the files
+    -i  <directory> Import data; specify directory in which to find XML files
+    -e              Export data from database
 
 example usage:
-  perl main.pl -d ../files -r
+    perl main.pl -i ../files
+    perl main.pl -e
 
 USAGE
 }
