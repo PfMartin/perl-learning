@@ -81,21 +81,50 @@ sub get_db_handler {
 sub add_to_database {
     my ( $db_handler, $data ) = @_;
 
-    my $sth = $db_handler->prepare('insert into Bands (name) values (?)');
-    unless ($sth) {
-        die "Failed preparing SQL\n";
-    }
+    clear_database($db_handler);
+
+    my $sth_bands = $db_handler->prepare('insert into Bands (name) values (?)')
+      or die("Failed preparing SQL for inserting bands\n");
+
+    my $sth_albums = $db_handler->prepare(
+        'insert into Albums (name, position, band_id) values (?, ?, ?)')
+      or die("Failed preparing SQL for inserting albums\n");
 
     for my $data ( @{$data} ) {
         my $band_name = $data->{"name"};
-        print("Inserting $band_name into database\n");
+        my $albums    = $data->{"albums"};
 
-        $sth->execute($band_name);
+        $sth_bands->execute($band_name)
+          or die "Failed adding '$band_name' to the database\n";
 
+        my $band_id = $sth_bands->{"mysql_insertid"};
+        print("Inserted $band_name with ID: $band_id\n");
+
+        for my $album ( @{$albums} ) {
+            my $album_name     = $album->{"name"};
+            my $album_position = $album->{"chart_position"};
+
+            $sth_albums->execute( $album_name, $album_position, $band_id )
+              or print(
+"Error: Failed to insert album for $band_name with values: $album_name, $album_position, $band_id\n"
+              );
+        }
     }
 
-    $sth->finish();
+    $sth_bands->finish();
+    $sth_albums->finish();
     print("Done inserting\n");
+}
+
+sub clear_database {
+    my ($db_handler) = @_;
+
+    $db_handler->do('delete from Albums')
+      or die "Failed to delete all entries from the Albums table";
+    $db_handler->do('delete from Bands')
+      or die "Failed to delete all entries from the Bands table";
+
+    print("Done deleting\n");
 }
 
 sub process_files {

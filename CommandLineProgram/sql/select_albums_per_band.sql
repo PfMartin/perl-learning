@@ -1,0 +1,1 @@
+SELECT Bands.name, Albums.name FROM Bands, Albums WHERE Albums.band_id=Bands.id;
