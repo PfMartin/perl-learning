@@ -37,6 +37,14 @@ sub main {
     my @data = process_files( \@files, $input_dir );
     print( Dumper(@data) );
 
+    my $dbh = get_db_handler();
+
+    add_to_database( $dbh, \@data );
+
+    $dbh->disconnect();
+}
+
+sub get_db_handler {
     my %database_config = (
         "db_name"     => "Bands",
         "db_host"     => "0.0.0.0",
@@ -55,16 +63,39 @@ sub main {
     my $dbh = DBI->connect(
         $dsn,
         $database_config{"db_user"},
-        $database_config{"db_password"}
+        $database_config{"db_password"},
+        {
+            mysql_ssl => 1,
+        }
     );
 
     unless ( defined($dbh) ) {
         die("Failed to connect to database.\n");
     }
+
     print("Connected to database \n");
 
-    $dbh->disconnect();
+    return $dbh;
+}
 
+sub add_to_database {
+    my ( $db_handler, $data ) = @_;
+
+    my $sth = $db_handler->prepare('insert into Bands (name) values (?)');
+    unless ($sth) {
+        die "Failed preparing SQL\n";
+    }
+
+    for my $data ( @{$data} ) {
+        my $band_name = $data->{"name"};
+        print("Inserting $band_name into database\n");
+
+        $sth->execute($band_name);
+
+    }
+
+    $sth->finish();
+    print("Done inserting\n");
 }
 
 sub process_files {
