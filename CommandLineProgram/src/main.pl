@@ -119,6 +119,9 @@ sub export_from_database {
 
     print("Exporting data...\n");
 
+    open( OUTPUT, ">" . "../files/output.csv" )
+      or die "Cannot create output file.\n";
+
     my $sql =
 "SELECT b.id as band_id, b.name as band_name, a.id as album_id, a.name as album_name, a.position as album_chart_position "
       . "FROM Bands as b "
@@ -131,18 +134,24 @@ sub export_from_database {
         die "Unable to execute export query\n";
     }
 
+    print( OUTPUT
+          "Band ID, Band Name, Album ID, Album Name, Album Chart Position\n" );
+
     while ( my $row = $sth->fetchrow_hashref() ) {
         my $band_id              = $row->{"band_id"};
         my $band_name            = $row->{"band_name"};
         my $album_id             = $row->{"album_id"};
         my $album_name           = $row->{"album_name"};
         my $album_chart_position = $row->{"album_chart_position"};
-        print(
+        print( OUTPUT
 "$band_id, $band_name, $album_id, $album_name, $album_chart_position\n"
         );
     }
 
     $sth->finish();
+
+    close(OUTPUT);
+    print("Export completed\n");
 }
 
 sub clear_database {
