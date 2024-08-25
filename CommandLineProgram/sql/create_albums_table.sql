@@ -1,0 +1,13 @@
+CREATE TABLE IF NOT EXISTS Albums (
+  id INT NOT NULL AUTO_INCREMENT,
+  name VARCHAR(45) NOT NULL,
+  position INT NOT NULL,
+  band_id INT UNSIGNED NOT NULL,
+  PRIMARY KEY (id),
+  INDEX fk_Albums_Bands (band_id ASC),
+  CONSTRAINT fk_Albums_Bands
+    FOREIGN KEY (band_id)
+    REFERENCES Bands (id)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;

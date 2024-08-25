@@ -4,6 +4,7 @@ use warnings;
 use Data::Dumper;
 use Getopt::Std;
 use XML::Simple;
+use DBI;
 
 $| = 1;
 
@@ -28,23 +29,55 @@ sub main {
 
     my @files = get_xml_files($input_dir);
 
-    if ( $opts{'r'} ) {
-        process_files( \@files, $input_dir );
-    }
-    else {
+    if ( !$opts{'r'} ) {
         print( Dumper( \@files ) );
+        return;
     }
+
+    my @data = process_files( \@files, $input_dir );
+    print( Dumper(@data) );
+
+    my %database_config = (
+        "db_name"     => "Bands",
+        "db_host"     => "0.0.0.0",
+        "db_port"     => "3306",
+        "db_user"     => "martin",
+        "db_password" => "martin",
+    );
+
+    my $dsn = sprintf(
+        "dbi:mysql:%s:%s:%s",
+        $database_config{"db_name"},
+        $database_config{"db_host"},
+        $database_config{"db_port"}
+    );
+
+    my $dbh = DBI->connect(
+        $dsn,
+        $database_config{"db_user"},
+        $database_config{"db_password"}
+    );
+
+    unless ( defined($dbh) ) {
+        die("Failed to connect to database.\n");
+    }
+    print("Connected to database \n");
+
+    $dbh->disconnect();
+
 }
 
 sub process_files {
     my ( $files, $input_dir ) = @_;
 
+    my @data;
+
     for my $file (@$files) {
         my $file_path = "$input_dir/$file";
-        my @bands     = process_file("$file_path");
-
-        print( Dumper(@bands) );
+        push( @data, process_file("$file_path") );
     }
+
+    return @data;
 }
 
 sub process_file {

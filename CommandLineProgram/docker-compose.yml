@@ -1,0 +1,13 @@
+services:
+  db:
+    image: mysql:9
+    environment:
+      MYSQL_ROOT_PASSWORD: 'Jahnel01'
+      MYSQL_DATABASE: 'Bands'
+      MYSQL_USER: 'martin'
+      MYSQL_PASSWORD: 'martin'
+    ports:
+      - 3306:3306
+    volumes:
+      - ./bands-db:/var/lib/mysql
+    container_name: bands-db
