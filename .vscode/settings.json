@@ -1,4 +1,7 @@
 {
   "editor.formatOnSave": true,
-  "editor.defaultFormatter": "zhiyuan-lin.simple-perl"
+  "editor.defaultFormatter": "zhiyuan-lin.simple-perl",
+  "perl.perlInc": [
+    "/home/martin/Prototyping/Perl/perl-learning/lib/Speak.pm"
+  ]
 }
